@@ -1,0 +1,6 @@
+#ifndef ASM_CODOPS_H_INCLUDED
+#define ASM_CODOPS_H_INCLUDED
+
+
+
+#endif // ASM_CODOPS_H_INCLUDED
