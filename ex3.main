@@ -1,0 +1,17 @@
+program ex3;
+
+var i;
+
+function myfunc(n1,n2);
+begin
+       	return n1+n2;
+end;
+
+begin
+	i=1;
+	while i<5 do
+		begin
+			write myfunc(i,i+1);
+			i=i+1;
+		end;
+end.

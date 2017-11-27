@@ -1,0 +1,5 @@
+#! /bin/bash
+bison -y -d main1.y
+flex main.l
+gcc -g -c y.tab.c lex.yy.c ast.c symboles.c
+gcc -g y.tab.o lex.yy.o ast.o symboles.o -o main 
