@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <string.h>
-#include "asm_codops.h"
+#include "vm_codops.h"
 #define SIZE 500
 
 int tabCodr[SIZE];
@@ -11,27 +11,21 @@ int tabCodr_ind = 0;
 typedef struct label
 {
   int addr;
-  char nom[256];
+  char* nom;
 } Label;
 
-typedef struct resolution_ref
+typedef struct ref
 {
   int addr;
-  char nom[256];
-  fpos_t position;
-} Ref_resolue;
-
+  char *nom;
+} Reference;
 
 Label table_etiquette[SIZE];
-Ref_resolue table_ref_non_resolues[SIZE];
+Reference table_ref[SIZE];
 int tab_ind_etiquette = 0;
 int tab_ind_ref = 0;
 
-/*
-Fabriquer les tables de reference et table des labels
- */
-
-int asm_to_bin(char* asm_cmd)
+int instruction_to_codops(char* asm_cmd)
 {
     if(strcmp("inc",asm_cmd)==0)
       return 13;
@@ -82,7 +76,7 @@ int asm_to_bin(char* asm_cmd)
     else if (strcmp("end",asm_cmd)==0)
       return 24;
    else      
-      return -1;
+      return 0;
 
 }
 
@@ -99,112 +93,173 @@ int find_label(char* reference)
   return -1;
 }
 
-void readAssembly(FILE *fin, FILE* fout)
+void ref_resolution()
+{
+  int i;
+  for(i = 0 ; i < tab_ind_etiquette; i++)
+    {
+      printf("%s %d\n", table_etiquette[i].nom, table_etiquette[i].addr);
+    }
+
+  for (i = 0; i < tab_ind_ref; i++)
+    {
+      int indLabel = find_label(table_ref[i].nom);
+      if (indLabel == -1)
+	{
+	  printf("LE LABEL %s N'EXISTE PAS!!!!\n", table_ref[i].nom );
+	  exit(1);
+	}
+	
+      else
+	{
+	  tabCodr[ table_ref[i].addr] = table_etiquette[i].addr;
+	}
+    }
+
+  
+}
+
+void addLabel(char* nom, int addr){
+
+  table_etiquette[tab_ind_etiquette].nom = strdup(nom);
+  table_etiquette[tab_ind_etiquette++].addr = addr;
+}
+
+void writeBinary(FILE* fout)
+{
+  int i;
+
+  fprintf(fout, "%d\n", tabCodr_ind);
+
+  for (i = 0 ; i < tabCodr_ind; i++)
+    {
+      fprintf(fout, "%d:%d\n", i, tabCodr[i]);
+    }
+
+}
+
+void readAssembly(FILE *fin)
 {
 	char line[100];
-	int nb_lines=0;
-	char cmd[256];
-	char num[256];
-	int instruction;
-	char tmp; //pour stocker :
-
-	fprintf(fout, "%d\n\n", nb_lines);
+	char instruction[256];
+	char argument[256];
+	int codops;
 
 	do
 	{
 	  fgets(line,100,fin);
 
-	  if (strstr(num, ":") != NULL)
+	  if (strstr(line, ":") != NULL)
 	    {
-	      sscanf(line, "%s %c %s %s", table_etiquette[tab_ind_etiquette].nom, &tmp, cmd, num);
-	      table_etiquette[tab_ind_etiquette++].addr = nb_lines;
+	      /* L'instruction qui suit le label est passée à la ligne */
+	      /* IL n'y a donc aucune instruction sur la même ligne que le label */
+	      char nom[256];
+	      char tmp; //pour stocker :
+	      sscanf(line, "%s %c %s %s", nom, &tmp, instruction, argument);
+	      addLabel(nom, tabCodr_ind);
 	    }
 	  else
 	    {
-	      sscanf(line,"%s %s",cmd,num);
-	     
+	      sscanf(line,"%s %s",instruction,argument);
 	    }
-	  instruction = asm_to_bin(cmd);
-	  fprintf(fout,"%d:%d\n",nb_lines,instruction);
-	  nb_lines++;
 	  
-	  // Position de cette instruction a vérifier: doit pas ecrire la ligne d'avant
-	  if (instruction ==0)
+	  codops = instruction_to_codops(instruction);
+
+	  switch(codops)
 	    {
-	      tabCodr[tabCodr_ind++] = nb_lines;
-	    }
-
-	  if (instruction == 15)
-	    {
-	      fprintf(fout,"%d:%d\n",nb_lines, atoi(num));
-	      nb_lines++;
-	    }
-	  else if (instruction == 16)
-	    {	     
-	      fprintf(fout,"%d:%d\n",nb_lines, 48 + atoi(num));	  
-	      fprintf(fout,"%d:0\n",++nb_lines);
-	      nb_lines++;
-	    }
-
-	  else if (instruction == 13)
-	    {
-	      fprintf(fout,"%d:%d\n",nb_lines, atoi(num));
-	      nb_lines++;
-	    }
-	  else if (instruction == 19 || instruction == 20)
-	    {	      
-	      char reference[256];
-	      sprintf(reference, "%s", num);
-	      int i = find_label(reference); 
-	      if (i != -1)
-		{
-		  fprintf(fout,"%d:%d\n%d:%d\n", nb_lines, instruction, nb_lines+1, table_etiquette[i].addr);
-		  nb_lines++;
-		}
-	      else
-		{
-		  fprintf(fout,"%d:%d\n", nb_lines, instruction);
-		  fgetpos(fout, &table_ref_non_resolues[tab_ind_ref].position);
-		  fprintf(fout,"%d:%d\n", nb_lines+1, -1);
-		  table_ref_non_resolues[tab_ind_ref].addr = nb_lines+1;
-		  sprintf(table_ref_non_resolues[tab_ind_ref++].nom, "%s", reference); 
-		  nb_lines++;
-		}
-	      
-	    }
-
-	} while(strstr(line,"end")==NULL);
-	
-	/*2eme passe pour resoudre les references non resolues*/
-	int i,j;
-	for(i=0; i< tab_ind_ref; i++)
-	  {
-
-	    j = find_label(table_ref_non_resolues[i].nom);
-	    if (j == -1)
+	    case OP_PUSH:
 	      {
-		printf("ERREUR DE LABELS!!\n");
-		exit(1);
+		tabCodr[tabCodr_ind++] = codops;
+		tabCodr[tabCodr_ind++] = atoi(argument);
+		break;
 	      }
-	    fsetpos(fout, &table_ref_non_resolues[i].position);
-	    fprintf(fout,"%d:%d\n", table_ref_non_resolues[i].addr, table_etiquette[j].addr);
-	    
-	     
-	  }
-	
+	    case OP_PUSHR:
+	      {
+		tabCodr[tabCodr_ind++] = codops;
+		int i;
+		for(i = 0; i < strlen(argument); i++)
+		  {
+		    tabCodr[tabCodr_ind++] = (int)argument[i];
+		  }
+		tabCodr[tabCodr_ind++] = 0;
+		break;
+	      }
 
-	// ecriture du nombre de ligne en debut de fichier
-	rewind(fout);
-	fprintf(fout, "%d\n", nb_lines--);
+	    case OP_INC:
+	      {
+		tabCodr[tabCodr_ind++] = codops;
+		tabCodr[tabCodr_ind++] = atoi(argument);
+		break;
+	      }
+	    case OP_DEC:
+	      {
+		tabCodr[tabCodr_ind++] = codops;
+		tabCodr[tabCodr_ind++] = atoi(argument);
+		break;
+	      }
+	    case OP_JP:
+	      {
+
+		int indLabel = find_label(argument);
+
+		tabCodr[tabCodr_ind++] = codops;
+		
+		if ( indLabel != -1)
+		  tabCodr[tabCodr_ind++] = table_etiquette[indLabel].addr;
+		else
+		  {
+		    table_ref[tab_ind_ref].addr = tabCodr_ind;
+		    table_ref[tab_ind_ref++].nom = strdup(argument);
+		    tabCodr[tabCodr_ind++] = -1;
+		  }
+		break;
+	      }
+
+	    case OP_JF:
+	      {
+
+		int indLabel = find_label(argument);
+
+		tabCodr[tabCodr_ind++] = codops;
+		
+		if ( indLabel != -1)
+		  tabCodr[tabCodr_ind++] = table_etiquette[indLabel].addr;
+		else
+		  {
+		    table_ref[tab_ind_ref].addr = tabCodr_ind;
+		    table_ref[tab_ind_ref++].nom = strdup(argument);
+		    tabCodr[tabCodr_ind++] = -1;
+		  }
+		break;
+	      }
+
+	    case -1:
+	      {
+		printf("ERREUR DE SYNTAXE!!!!\n");
+		exit(1);
+	      }	      
+
+	    default:
+	      {
+		tabCodr[tabCodr_ind++] = codops;
+		break;
+	      }
+
+	    }
+
+	} while(strstr(line,"end") == NULL);
+
+	ref_resolution();
 }
 
 int main(int argc, char **argv)
 {
 
-	if (argc!=3)
-	{
-		printf("Usage : asm infile.asm outfile.bin\n");
-	}
+  if (argc!=3)
+    {
+      printf("Usage : asm infile.asm outfile.bin\n");
+    }
+
 	FILE *fin=fopen(argv[1],"r");
 	FILE *fout= fopen(argv[2], "w");
 
@@ -214,7 +269,8 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	readAssembly(fin, fout);
+	readAssembly(fin);
+	writeBinary(fout);
 	fclose(fin);
 	fclose(fout);
 
