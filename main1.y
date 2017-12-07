@@ -32,7 +32,7 @@ int typeDeclaration;
 %nonassoc T_NNOT
 
 %token T_AND T_NUMERIC T_BEGIN T_END
-%token T_NOT T_OR
+%token T_NOT T_OR T_IF T_THEN T_DO T_WHILE
 %token T_VAR T_VARIABLE T_WRITE
 
 %type <f> T_NUMERIC
@@ -45,6 +45,8 @@ int typeDeclaration;
 %type <np> write_instruction 
 %type <np> affectation 
 %type <np> expr 
+%type <np> if_instruction 
+%type <np> while_instruction 
 
 //%type <np> liste_parametres_formels
 
@@ -116,7 +118,16 @@ liste_instructions : liste_instructions instruction ';' { $$ = createOperatorNod
 
 instruction : write_instruction
 	| affectation
-        | instruction_composee
+        | instruction_composee 
+        | if_instruction
+        | while_instruction
+	;
+
+if_instruction : T_IF expr T_THEN instruction %prec IFX { $$=createOperatorNode(OPER_IF,2,$2,$4); }
+        | T_IF expr T_THEN instruction T_ELSE instruction { $$=createOperatorNode(OPER_IF,3,$2,$4,$6) ; }
+        ;
+
+while_instruction : T_WHILE expr T_DO instruction { $$=createOperatorNode(OPER_WHILE,2,$2,$4); }
 	;
 
 write_instruction : T_WRITE expr { $$ = createOperatorNode(OPER_WRITE,1,$2); }
@@ -155,7 +166,7 @@ int main(void) {
 	print_table_symb(0);
 	print_table_fonctions();
 	//printf("generateDigraph\n");
-	//generateDigraph(programRoot);
+	generateDigraph(programRoot);
 	//printf("generateAsm\n");
 	generateAsm(programRoot,"res.asm");
     	return 0;

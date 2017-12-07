@@ -28,53 +28,55 @@ int tab_ind_ref = 0;
 int instruction_to_codops(char* asm_cmd)
 {
     if(strcmp("inc",asm_cmd)==0)
-      return 13;
+      return OP_INC;
     else if(strcmp("add",asm_cmd)==0)
-      return 1;
+      return OP_ADD;
     else if(strcmp("push",asm_cmd)==0)
-      return 15;
+      return OP_PUSH;
     else if (strcmp("sub",asm_cmd)==0)
-      return 2;
+      return OP_SUB;
     else if (strcmp("mult",asm_cmd)==0)
-      return 3;
+      return OP_MULT;
     else if (strcmp("div",asm_cmd)==0)
-      return 4;
+      return OP_DIV;
     else if (strcmp("divi",asm_cmd)==0)
-      return 5;
+      return OP_DIVI;
     else if (strcmp("neg",asm_cmd)==0)
-      return 6;
+      return OP_NEG;
     else if (strcmp("and",asm_cmd)==0)
-      return 7;
+      return OP_AND;
     else if (strcmp("or",asm_cmd)==0)
-      return 8;
+      return OP_OR;
     else if (strcmp("not",asm_cmd)==0)
-      return 9;
+      return OP_NOT;
     else if (strcmp("eq",asm_cmd)==0)
-      return 10;
+      return OP_EQ;
     else if (strcmp("ls",asm_cmd)==0)
-      return 11;
+      return OP_LS;
     else if (strcmp("gt",asm_cmd)==0)
-      return 12;
+      return OP_GT;
     else if (strcmp("dec",asm_cmd)==0)
-      return 14;
+      return OP_DEC;
     else if (strcmp("pushr",asm_cmd)==0)
-      return 16;
+      return OP_PUSHR;
     else if (strcmp("stm",asm_cmd)==0)
-      return 17;
+      return OP_STM;
     else if (strcmp("mts",asm_cmd)==0)
-      return 18;
+      return OP_MTS;
     else if (strcmp("jp",asm_cmd)==0)
-     return 19; 
+     return OP_JP; 
     else if (strcmp("jf",asm_cmd)==0)
-      return 20;
+      return OP_JF;
     else if (strcmp("input",asm_cmd)==0)
-      return 21;
+      return OP_INPUT;
     else if (strcmp("output",asm_cmd)==0)
-      return 22;
+      return OP_OUTPUT;
     else if (strcmp("outchar",asm_cmd)==0)
-      return 23;
+      return OP_OUTCHAR;
     else if (strcmp("end",asm_cmd)==0)
-      return 24;
+      return OP_HALT;
+    else if (strcmp("halt",asm_cmd)==0)
+      return OP_HALT;
    else      
       return 0;
 
@@ -151,8 +153,6 @@ void readAssembly(FILE *fin)
 
 	  if (strstr(line, ":") != NULL)
 	    {
-	      /* L'instruction qui suit le label est passée à la ligne */
-	      /* IL n'y a donc aucune instruction sur la même ligne que le label */
 	      char nom[256];
 	      char tmp; //pour stocker :
 	      sscanf(line, "%s %c %s %s", nom, &tmp, instruction, argument);

@@ -72,11 +72,188 @@ nodeType *createIdentifierNode(char *id, int funcNum, int index)
 
 void generateAsmRec(nodeType *n, FILE *fout)
 {
-	int label1, label2;
+        int label1, label2; // variables locales de la fonction recursive
 
 	if (n==NULL)
 		return;
+     
+	switch(n->type)
+	  {
+	  case typeNumeric:
+	    {
+	      fprintf(fout, "pushr %f\n", n -> t_numeric.valeur);
+	      break;
+	    }
+	  case typeOperator:
+	    {
+	      switch (n -> t_oper.oper)
+		{
+		case OPER_ADD:
+		  {
+		    int i;
+		    for(i=0; i < n -> t_oper.nOperands; i++)
+		      {
+			generateAsmRec(n -> t_oper.op[i],fout);
+		      }
 
+		    fprintf(fout, "add\n");
+
+		    break;
+		  }
+
+		case OPER_SUB:
+		  {
+		    int i;
+		    for(i=0; i < n -> t_oper.nOperands; i++)
+		      {
+			generateAsmRec(n -> t_oper.op[i],fout);
+		      }
+
+		    fprintf(fout, "sub\n");
+
+		    break;
+		  }
+
+		case OPER_MULT:
+		  {
+		    int i;
+		    for(i=0; i < n -> t_oper.nOperands; i++)
+		      {
+			generateAsmRec(n -> t_oper.op[i],fout);
+		      }
+
+		    fprintf(fout, "mult\n");
+
+		    break;
+		  }
+
+		case OPER_DIV:
+		  {
+		    int i;
+		    for(i=0; i < n -> t_oper.nOperands; i++)
+		      {
+			generateAsmRec(n -> t_oper.op[i],fout);
+		      }
+
+		    fprintf(fout, "div\n");
+
+		    break;
+		  }
+
+		case OPER_WRITE:
+		  {
+		    int i;
+		    for(i=0; i < n -> t_oper.nOperands; i++)
+		      {
+			generateAsmRec(n -> t_oper.op[i],fout);
+		      }
+
+		    fprintf(fout, "output\n");
+
+		    break;
+		  }
+
+
+		case OPER_ASSIGN:
+		  {
+		    fprintf(fout, "push %d\n", n -> t_oper.op[0] -> t_identifier.index);
+		    int i;
+		    for(i=1; i < n -> t_oper.nOperands; i++)
+		      {
+			generateAsmRec(n -> t_oper.op[i],fout);
+		      }
+		    fprintf(fout, "stm\n");
+		    
+		    break;
+		  }
+		case OPER_SEQUENCE:
+		  {
+		    int i;
+		    for(i=0; i < n -> t_oper.nOperands; i++)
+		      {
+			generateAsmRec(n -> t_oper.op[i],fout);
+		      }
+		    
+		    break;
+		  }
+
+		case OPER_RESERVE_SPACE:
+		  break;
+		case OPER_INF:
+		  {
+		    int i;
+		    for(i=0; i < n -> t_oper.nOperands; i++)
+		      {
+			generateAsmRec(n -> t_oper.op[i],fout);
+		      }
+		    fprintf(fout, "ls\n");
+		    break;
+		  }
+		case OPER_SUP:
+		  {
+		    int i;
+		    for(i=0; i < n -> t_oper.nOperands; i++)
+		      {
+			generateAsmRec(n -> t_oper.op[i],fout);
+		      }
+		    fprintf(fout, "gt\n");
+		    break;
+		  }
+		case OPER_EQ:
+		  {
+		    int i;
+		    for(i=0; i < n -> t_oper.nOperands; i++)
+		      {
+			generateAsmRec(n -> t_oper.op[i],fout);
+		      }
+		    fprintf(fout, "eq\n");
+		    break;
+		  }
+		case OPER_NE:
+		  {
+		    int i;
+		    for(i=0; i < n -> t_oper.nOperands; i++)
+		      {
+			generateAsmRec(n -> t_oper.op[i],fout);
+		      }
+		    fprintf(fout, "not\n");
+		    break;
+		  }
+
+		case OPER_IF:
+		  {
+		    label1 = currentLabel;
+		    generateAsmRec(n -> t_oper.op[0],fout);
+		    fprintf(fout, "jf L%d\n",currentLabel++);
+		    generateAsmRec(n -> t_oper.op[1],fout);
+		    fprintf(fout, "L%d :",label1);
+		    
+		    break;
+		  }
+		default:
+		  {
+		    printf("operation: %d\n", n -> t_oper.oper );
+		    printf("OPERATION INCONNUE!\n");
+		    exit(1);
+		  }
+		}
+	      break;
+	    }
+	  case typeIdentifier:
+	    {
+	      fprintf(fout, "push %d\n", n -> t_identifier.index);
+	      fprintf(fout,"mts\n");
+	      break;
+	    }
+	  default:
+	    {
+	      printf("ERREUR INCONNUE!\n");
+	      exit(1);
+	    }
+	    
+	    
+	  }
+	
 }
 
 void generateAsmExpression(nodeType *n, FILE *fout)
@@ -92,6 +269,7 @@ void generateAsm(nodeType *n, char *filename)
 
 	currentLabel=0;
 	fout=fopen(filename,"w");
+	fprintf(fout, "inc %d\n", table_nbre_variables_globales[0]);
 	generateAsmRec(n,fout);
 	fprintf(fout,"\thalt\n");
 	fprintf(fout,"\tend\n");
@@ -100,7 +278,7 @@ void generateAsm(nodeType *n, char *filename)
 
 void generateDigraphNameNode(nodeType *n,FILE *fout)
 {
-/*
+
         if (n==NULL)
                 return;
 
@@ -243,7 +421,7 @@ void generateDigraphNameNode(nodeType *n,FILE *fout)
                         }
                         break;
         }
-*/
+
 }
 
 void generateDigraphEdges(nodeType *n,FILE *fout)
@@ -309,7 +487,7 @@ void generateDigraphEdges(nodeType *n,FILE *fout)
 
 void generateDigraph(nodeType *n)
 {
-/*
+
 	FILE *fout;
 
 	fout=fopen("res.dot","w");
@@ -322,5 +500,5 @@ void generateDigraph(nodeType *n)
 	fprintf(fout,"}\n");
 	fclose(fout);
 	system("dot -Tpng res.dot -o res.png");
-*/
+
 }
