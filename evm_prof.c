@@ -41,7 +41,7 @@ void readAssembly(FILE *fin)
 	}
 }
 
-// Q5 : Fonction de debug qui affiche la pile jusqu'a son sommet 
+// Q5 : Fonction de debug qui affiche la pile jusqu'a son sommet
 
 void printPile()
 {
@@ -53,7 +53,7 @@ void printPile()
 	printf("\n");
 }
 
-// Q6 : Boucle principale d'exécution de la machine virtuelle 
+// Q6 : Boucle principale d'exécution de la machine virtuelle
 //      On sort de cette fonction si l'instruction pointee
 //      par pc est OP_HALT. On traitera les erreurs et on
 //	pensera a ajouter des traces et des moyens de mise
@@ -62,8 +62,8 @@ void printPile()
 void run()
 {
 	float fv;
-	int vm1,v;
-    	int i,depile,n,orig,dest;
+	int /*vm1,*/v;
+    	int i,/*depile,*/n,orig,dest;
 	char strReal[256];
 	int strRealLength,pos;
 
@@ -78,48 +78,48 @@ void run()
 		switch (codeSegment[pc])
 		{
 			case OP_ADD:
-				pile[sp-1]=pile[sp-1]+pile[sp]; 
+				pile[sp-1]=pile[sp-1]+pile[sp];
 				sp-- ; pc++ ; break;
 			case OP_SUB:
-				pile[sp-1]=pile[sp-1]-pile[sp]; 
+				pile[sp-1]=pile[sp-1]-pile[sp];
 				sp-- ; pc++ ; break;
 			case OP_MULT:
-				pile[sp-1]=pile[sp-1]*pile[sp]; 
+				pile[sp-1]=pile[sp-1]*pile[sp];
 				sp-- ; pc++ ; break;
 			case OP_DIV:
-				pile[sp-1]=pile[sp-1]/pile[sp]; 
+				pile[sp-1]=pile[sp-1]/pile[sp];
 				sp-- ; pc++ ; break;
 			case OP_DIVI:
-				pile[sp-1]=(float)((int)pile[sp-1]/(int)pile[sp]); 
+				pile[sp-1]=(float)((int)pile[sp-1]/(int)pile[sp]);
 				sp-- ; pc++ ; break;
 			case OP_NEG:
-				pile[sp]=-pile[sp]; 
+				pile[sp]=-pile[sp];
 				pc++ ; break;
 			case OP_AND:
-				pile[sp-1]=(float)((int)pile[sp-1] & (int)pile[sp]); 
+				pile[sp-1]=(float)((int)pile[sp-1] & (int)pile[sp]);
 				sp-- ; pc++ ; break;
 			case OP_OR:
-				pile[sp-1]=(float)((int)pile[sp-1] | (int)pile[sp]); 
+				pile[sp-1]=(float)((int)pile[sp-1] | (int)pile[sp]);
 				sp-- ; pc++ ; break;
 			case OP_NOT:
-				pile[sp]=(float)(1-(int)pile[sp]); 
+				pile[sp]=(float)(1-(int)pile[sp]);
 				pc++ ; break;
 			case OP_EQ:
-				pile[sp-1]=(pile[sp-1]==pile[sp]) ? 1.0 : 0.0; 
+				pile[sp-1]=(pile[sp-1]==pile[sp]) ? 1.0 : 0.0;
 				sp-- ; pc++ ; break;
 			case OP_LS:
 				//printf("av LS=%f %f\n",pile[sp-1],pile[sp]);
-				pile[sp-1]=(pile[sp-1]<pile[sp]) ? 1.0 : 0.0; 
+				pile[sp-1]=(pile[sp-1]<pile[sp]) ? 1.0 : 0.0;
 				//printf("ap LS=%f\n",pile[sp-1]);
 				sp-- ; pc++ ; break;
 			case OP_GT:
-				pile[sp-1]=(pile[sp-1]>pile[sp]) ? 1.0 : 0.0; 
+				pile[sp-1]=(pile[sp-1]>pile[sp]) ? 1.0 : 0.0;
 				sp-- ; pc++ ; break;
 			case OP_INC:
-				sp=sp+codeSegment[pc+1]; 
+				sp=sp+codeSegment[pc+1];
 				pc+=2 ; break;
 			case OP_DEC:
-				sp=sp-codeSegment[pc+1]; 
+				sp=sp-codeSegment[pc+1];
 				pc+=2 ; break;
 			case OP_PUSH:
 				sp++;
@@ -148,7 +148,7 @@ void run()
 				sp++;
 				pile[sp]=bp+codeSegment[pc+1]; //on stocke l'adresse de retour
 				pc=pc+2; break;
-		        case OP_DUPL: //duplique la valeur du sommet 
+		        case OP_DUPL: //duplique la valeur du sommet
 				sp++;
 				pile[sp]=pile[sp-1];
 				pc++; break;
@@ -165,7 +165,7 @@ void run()
 				pc=pc+2; break;
 			case OP_STM:
 				v=pile[sp];
-				dest=(int)pile[sp-1];	
+				dest=(int)pile[sp-1];
 				pile[dest]=v;
 				pc++; sp-=2;
 				break;
@@ -207,13 +207,13 @@ void run()
 					pc=pc+2;
 				sp--;
 				break;
-		        case OP_CALL: //on appelle une fonction 
+		        case OP_CALL: //on appelle une fonction
 				sp++;
 				pile[sp]=pc+2; //on empile le pc vers lequel on reviendra quand on aura fini d'exécuter le code la fonction
 				pc=codeSegment[pc+1]; //on exécute le code de la fonction
 				break;
 		        case OP_RET:
-			        pc=(int)pile[sp]; //à l'appel de la fonction, on avait stocké dans la pile le numero de la ligne où l'on devait se rendre une fois la fonction terminéé    
+			        pc=(int)pile[sp]; //à l'appel de la fonction, on avait stocké dans la pile le numero de la ligne où l'on devait se rendre une fois la fonction terminéé
 				sp--; //on dépile ce numero de ligne
 				break;
 			case OP_INPUT:

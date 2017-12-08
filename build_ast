@@ -1,5 +1,10 @@
-#! /bin/bash
+#!/bin/bash
 bison -y -d main1.y
 flex main.l
 gcc -g -c y.tab.c lex.yy.c ast.c symboles.c
 gcc -g y.tab.o lex.yy.o ast.o symboles.o -o main 
+./main < $1
+gcc -Wall -Werror evm_prof.c -o evm_prof
+gcc -Wall -Werror asm2.c -o asm2
+./asm2 res.asm res.bi
+./evm_prof res.bi
