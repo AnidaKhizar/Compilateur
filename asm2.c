@@ -114,7 +114,7 @@ void ref_resolution()
 	
       else
 	{
-	  tabCodr[ table_ref[i].addr] = table_etiquette[i].addr;
+	  tabCodr[ table_ref[i].addr] = table_etiquette[indLabel].addr;
 	}
     }
 
@@ -223,7 +223,11 @@ void readAssembly(FILE *fin)
 		tabCodr[tabCodr_ind++] = codops;
 		
 		if ( indLabel != -1)
-		  tabCodr[tabCodr_ind++] = table_etiquette[indLabel].addr;
+		  {
+		    /* printf("DANS JF!! indice: %d\n", table_etiquette[indLabel].addr); */
+		    tabCodr[tabCodr_ind++] = table_etiquette[indLabel].addr;
+		  }
+		  
 		else
 		  {
 		    table_ref[tab_ind_ref].addr = tabCodr_ind;
