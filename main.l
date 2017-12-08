@@ -4,7 +4,7 @@
 #include "y.tab.h"
 
 %}
-
+%option yylineno
 %%
 
 "and"           {return T_AND;}
@@ -31,8 +31,7 @@
             		}
 
 [0-9]+\.[0-9]+ 			{
-                		yylval.f = atof(yytext);
-                		return T_NUMERIC;
+                		yylval.f = atof(yytext);                		return T_NUMERIC;
             		}
 
 ">="            {return T_GE;}
@@ -44,6 +43,12 @@
 .               { return *yytext; }
 
 %%
+
+void yyerror(char *s) {
+  fprintf(stderr,"Error | Line: %d\n%s\n",yylineno,s);
+}
+
+
 int yywrap(void) {
     return 1;
 }

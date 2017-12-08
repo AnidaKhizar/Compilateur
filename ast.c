@@ -224,10 +224,15 @@ void generateAsmRec(nodeType *n, FILE *fout)
 		  {
 		    label1 = currentLabel;
 		    generateAsmRec(n -> t_oper.op[0],fout);
-		    fprintf(fout, "jf L%d\n",currentLabel++);
+		    fprintf(fout, "jf L%.3d\n",currentLabel++);
 		    generateAsmRec(n -> t_oper.op[1],fout);
-		    fprintf(fout, "L%d :",label1);
-		    
+		    label2 = currentLabel;
+		    if (n -> t_oper.op[2])
+		      fprintf(fout, "jp L%.3d\n",currentLabel++);
+		    fprintf(fout, "L%.3d : ",label1);
+		    generateAsmRec(n -> t_oper.op[2],fout);
+		    if (n -> t_oper.op[2])
+		      fprintf(fout, "L%.3d : ",label2);
 		    break;
 		  }
 		default:

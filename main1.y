@@ -8,13 +8,15 @@
 #include "ast.h"
 
 int yylex(void);
-void yyerror(char *s);
+//void yyerror(char *s);
 
 nodeType *programRoot;
 
 int typeDeclaration;
 
 %}
+
+%locations
 
 %union {
 	float f;
@@ -31,7 +33,7 @@ int typeDeclaration;
 %nonassoc T_UMINUS
 %nonassoc T_NNOT
 
-%token T_AND T_NUMERIC T_BEGIN T_END
+%token T_AND T_NUMERIC T_BEGIN T_END T_ELSE
 %token T_NOT T_OR T_IF T_THEN T_DO T_WHILE
 %token T_VAR T_VARIABLE T_WRITE
 
@@ -156,9 +158,10 @@ expr: T_NUMERIC { $$ = createNumericNode($1); }
         ;
 %%
 
-void yyerror(char *s) {
-    fprintf(stdout, "%s\n", s);
-}
+/* void yyerror(char *s) { */
+/*   fprintf(stdout, "%s\n", s); */
+/* } */
+
 
 int main(void) {
 	init_table_symboles();
