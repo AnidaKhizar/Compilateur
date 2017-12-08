@@ -1,0 +1,11 @@
+var a,b;
+begin
+a = 1;
+b = 2;
+while a < 3 do
+     begin
+     a = a + 1;
+     write a;
+     end;
+write b;
+end

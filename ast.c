@@ -235,6 +235,20 @@ void generateAsmRec(nodeType *n, FILE *fout)
 		      fprintf(fout, "L%.3d : ",label2);
 		    break;
 		  }
+
+		case OPER_WHILE:
+		  {
+		    label1 = currentLabel;
+		    fprintf(fout, "L%.3d : ",currentLabel++);
+		    generateAsmRec(n -> t_oper.op[0],fout);
+		    label2 = currentLabel;
+		    fprintf(fout, "jf L%.3d\n",currentLabel++);
+		    generateAsmRec(n -> t_oper.op[1],fout);
+		    fprintf(fout, "jp L%.3d\n",label1);
+		    fprintf(fout, "L%.3d : ", label2);
+		    break;
+		  }
+
 		default:
 		  {
 		    printf("operation: %d\n", n -> t_oper.oper );
