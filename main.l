@@ -14,6 +14,11 @@
 "end"            {return T_END;}
 "var"           {return T_VAR;}
 "write"         {return T_WRITE;}
+"if"         {return T_IF;}
+"else"         {return T_ELSE;}
+"while"         {return T_WHILE;}
+"do"         {return T_DO;}
+"then"         {return T_THEN;}
 
 [a-zA-Z][a-zA-Z0-9_]*   {
                 		yylval.s = strdup(yytext);
