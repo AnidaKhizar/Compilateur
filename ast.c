@@ -151,9 +151,30 @@ void generateAsmRec(nodeType *n, FILE *fout, char* nom)
                     case OPER_ASSIGN:
                       {
                         //printf("DANS OPER_ASSIGN\n");
-                        fprintf(fout, "\tpush %d\n", n -> t_oper.op[0] -> t_identifier.index);
-                        generateAsmRec(n -> t_oper.op[1],fout, "OPER_ASSIGN droite");
-                        fprintf(fout, "\tstm\n");
+                        switch (table_ident_fonctions[n -> t_oper.op[0] -> t_identifier.funcNum][n -> t_oper.op[0] -> t_identifier.index].typv)
+                        {
+                            case TYPE_VARIABLE_GLOBALE:
+                              {
+                                fprintf(fout, "\tpush %d\n", n -> t_oper.op[0] -> t_identifier.index);
+                                generateAsmRec(n -> t_oper.op[1],fout, "OPER_ASSIGN droite");
+                                fprintf(fout, "\tstm\n");
+                                break;
+                              }
+                            case TYPE_VARIABLE_LOCALE:
+                              {
+                                fprintf(fout, "\tlibp %d\n", -1 - table_nbre_formels[n -> t_oper.op[0] -> t_identifier.funcNum] + n -> t_oper.op[0] -> t_identifier.index);
+                                generateAsmRec(n -> t_oper.op[1],fout, "OPER_ASSIGN droite");
+                                fprintf(fout,"\tstm\n");
+                                break;
+                              }
+                            case TYPE_PARAMETRE:
+                              {
+                                fprintf(fout, "\tlibp %d\n", -1 - table_nbre_formels[n -> t_oper.op[0] -> t_identifier.funcNum] + n -> t_oper.op[0] -> t_identifier.index);
+                                generateAsmRec(n -> t_oper.op[1],fout, "OPER_ASSIGN droite");
+                                fprintf(fout,"\tstm\n");
+                                break;
+                              }
+                        }
 
                         break;
                       }
@@ -181,16 +202,16 @@ void generateAsmRec(nodeType *n, FILE *fout, char* nom)
                       case OPER_DEF_FONCTION:
                       {
                         //printf("DANS MAIN: %d\n", n-> t_oper.nOperands);
-			fprintf(fout, "%s :",table_ident_fonctions[0][num_func].ident);   
+			fprintf(fout, "%s :",table_ident_fonctions[0][num_func].ident);
 			generateAsmRec( n -> t_oper.op[1], fout, table_ident_fonctions[0][num_func++].ident);
                         break;
                       }
                     case OPER_APPEL_FONCTION:
                       {
-			
+
                         break;
                       }
-		      
+
 	    case OPER_RETURN:
 	      {
 		fprintf(fout, "\tlibp %d\n", - 2 - table_nbre_formels[table_ident_fonctions[0][num_func-1].funcNum]);
@@ -292,29 +313,29 @@ void generateAsmRec(nodeType *n, FILE *fout, char* nom)
 	      break;
 	    }
 	  case typeIdentifier:
-	    {
-	      switch (table_ident_fonctions[n->t_identifier.funcNum][n->t_identifier.index].typv)
-		{
-		case TYPE_VARIABLE_GLOBALE:
-		  {   
-		    fprintf(fout, "\tpush %d\n", n -> t_identifier.index);
-		    fprintf(fout,"\tmts\n");
-		    break;
-		  }
-		case TYPE_VARIABLE_LOCALE:
-		  {   
-		    fprintf(fout, "\tlibp %d\n", -1 - table_nbre_formels[n->t_identifier.funcNum] + n -> t_identifier.index);
-		    fprintf(fout,"\tmts\n");
-		    break;
-		  }
-		case TYPE_PARAMETRE:
-		  {   
-		    fprintf(fout, "\tlibp %d\n", -1 - table_nbre_formels[n->t_identifier.funcNum] + n -> t_identifier.index);
-		    fprintf(fout,"\tmts\n");
-		    break;
-		  }
-		}
-	      break;
+	  {
+        switch (table_ident_fonctions[n->t_identifier.funcNum][n->t_identifier.index].typv)
+            {
+            case TYPE_VARIABLE_GLOBALE:
+              {
+                fprintf(fout, "\tpush %d\n", n -> t_identifier.index);
+                fprintf(fout,"\tmts\n");
+                break;
+              }
+            case TYPE_VARIABLE_LOCALE:
+              {
+                fprintf(fout, "\tlibp %d\n", -1 - table_nbre_formels[n->t_identifier.funcNum] + n -> t_identifier.index);
+                fprintf(fout,"\tmts\n");
+                break;
+              }
+            case TYPE_PARAMETRE:
+              {
+                fprintf(fout, "\tlibp %d\n", -1 - table_nbre_formels[n->t_identifier.funcNum] + n -> t_identifier.index);
+                fprintf(fout,"\tmts\n");
+                break;
+              }
+            }
+        break;
 	    }
 	  default:
 	    {
