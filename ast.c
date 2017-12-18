@@ -7,6 +7,10 @@ int countDigraph;
 // Cette variable permet de declarer des etiquettes a la volee
 int currentLabel;
 
+
+int level=0;
+int num_func;
+
 nodeType *createNumericNode(float v)
 {
 	nodeType *p;
@@ -69,8 +73,7 @@ nodeType *createIdentifierNode(char *id, int funcNum, int index)
 
         return p;
 }
-int level=0;
-int num_func=table_nbre_variables_globales[0];
+
 void generateAsmRec(nodeType *n, FILE *fout, char* nom)
 {
     int label1, label2; // variables locales de la fonction recursive
@@ -171,23 +174,30 @@ void generateAsmRec(nodeType *n, FILE *fout, char* nom)
                     case OPER_MAIN:
                       {
                         //printf("DANS MAIN: %d\n", n-> t_oper.nOperands);
-                        fprintf(fout, "main : ");
+                        fprintf(fout, "main :");
                         generateAsmRec( n -> t_oper.op[0], fout, "MAIN");
                         break;
                       }
                       case OPER_DEF_FONCTION:
                       {
                         //printf("DANS MAIN: %d\n", n-> t_oper.nOperands);
-                        fprintf(fout, "%s : ",table_ident_fonctions[0][++num_func].ident);
-                        generateAsmRec( n -> t_oper.op[0], fout, "Func1");
-                        generateAsmRec( n -> t_oper.op[1], fout, "Func1");
+			fprintf(fout, "%s :",table_ident_fonctions[0][num_func].ident);   
+			generateAsmRec( n -> t_oper.op[1], fout, table_ident_fonctions[0][num_func++].ident);
                         break;
                       }
                     case OPER_APPEL_FONCTION:
                       {
+			
                         break;
                       }
-
+		      
+	    case OPER_RETURN:
+	      {
+		fprintf(fout, "\tlibp %d\n", - 2 - table_nbre_formels[table_ident_fonctions[0][num_func-1].funcNum]);
+		generateAsmRec( n -> t_oper.op[1], fout, "RETURN");
+		fprintf(fout, "\tret\n");
+		break;
+	      }
                     case OPER_INF:
                       {
                         //printf("DANS OPER_INF: %d\n", n -> t_oper.nOperands);
@@ -251,10 +261,10 @@ void generateAsmRec(nodeType *n, FILE *fout, char* nom)
                         label2 = currentLabel;
                         if (n -> t_oper.op[2])
                           fprintf(fout, "\tjp L%.3d\n",currentLabel++);
-                        fprintf(fout, "L%.3d : ",label1);
+                        fprintf(fout, "L%.3d :",label1);
                         generateAsmRec(n -> t_oper.op[2],fout, "OPER_IF droite");
                         if (n -> t_oper.op[2])
-                          fprintf(fout, "L%.3d : ",label2);
+                          fprintf(fout, "L%.3d :",label2);
                         break;
                       }
 
@@ -268,7 +278,7 @@ void generateAsmRec(nodeType *n, FILE *fout, char* nom)
                         fprintf(fout, "\tjf L%.3d\n",currentLabel++);
                         generateAsmRec(n -> t_oper.op[1],fout, "OPER_WHILE droite");
                         fprintf(fout, "\tjp L%.3d\n",label1);
-                        fprintf(fout, "L%.3d : ", label2);
+                        fprintf(fout, "L%.3d :", label2);
                         break;
                       }
 
@@ -283,8 +293,27 @@ void generateAsmRec(nodeType *n, FILE *fout, char* nom)
 	    }
 	  case typeIdentifier:
 	    {
-	      fprintf(fout, "\tpush %d\n", n -> t_identifier.index);
-	      fprintf(fout,"\tmts\n");
+	      switch (table_ident_fonctions[n->t_identifier.funcNum][n->t_identifier.index].typv)
+		{
+		case TYPE_VARIABLE_GLOBALE:
+		  {   
+		    fprintf(fout, "\tpush %d\n", n -> t_identifier.index);
+		    fprintf(fout,"\tmts\n");
+		    break;
+		  }
+		case TYPE_VARIABLE_LOCALE:
+		  {   
+		    fprintf(fout, "\tlibp %d\n", -1 - table_nbre_formels[n->t_identifier.funcNum] + n -> t_identifier.index);
+		    fprintf(fout,"\tmts\n");
+		    break;
+		  }
+		case TYPE_PARAMETRE:
+		  {   
+		    fprintf(fout, "\tlibp %d\n", -1 - table_nbre_formels[n->t_identifier.funcNum] + n -> t_identifier.index);
+		    fprintf(fout,"\tmts\n");
+		    break;
+		  }
+		}
 	      break;
 	    }
 	  default:
@@ -298,6 +327,7 @@ void generateAsmRec(nodeType *n, FILE *fout, char* nom)
 
 	//printf("FIN DU NOEUD %s\n \n", nom);
 	level--;
+
 }
 
 
@@ -312,7 +342,7 @@ void generateAsmExpression(nodeType *n, FILE *fout)
 void generateAsm(nodeType *n, char *filename)
 {
 	FILE *fout;
-
+	num_func =  table_nbre_variables_globales[0];
 	currentLabel=0;
 	fout=fopen(filename,"w");
 	fprintf(fout, "\tinc %d\n", table_nbre_variables_globales[0]);

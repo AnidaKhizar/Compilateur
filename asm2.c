@@ -77,6 +77,26 @@ int instruction_to_codops(char* asm_cmd)
       return OP_HALT;
     else if (strcmp("halt",asm_cmd)==0)
       return OP_HALT;
+    else if (strcmp("libp",asm_cmd)==0)
+      return OP_LIBP;
+    else if (strcmp("dupl",asm_cmd)==0)
+      return OP_DUPL;
+    else if (strcmp("cont",asm_cmd)==0)
+      return OP_CONT;
+    else if (strcmp("move",asm_cmd)==0)
+      return OP_MOVE;
+    else if (strcmp("copy",asm_cmd)==0)
+      return OP_COPY;
+    else if (strcmp("call",asm_cmd)==0)
+      return OP_CALL;
+    else if (strcmp("ret",asm_cmd)==0)
+      return OP_RET;
+    else if (strcmp("calls",asm_cmd)==0)
+      return OP_CALLS;
+    else if (strcmp("savebp",asm_cmd)==0)
+      return OP_SAVEBP;
+    else if (strcmp("rstrbp",asm_cmd)==0)
+      return OP_RSTRBP;
    else      
       return 0;
 
@@ -241,8 +261,44 @@ void readAssembly(FILE *fin)
 	      {
 		printf("ERREUR DE SYNTAXE!!!!\n");
 		exit(1);
-	      }	      
-
+	      }
+	    case OP_LIBP:
+	      {
+		tabCodr[tabCodr_ind++] = codops;
+		tabCodr[tabCodr_ind++] = atoi(argument);
+		break;
+	      }
+	    case OP_MOVE:
+	      {
+		tabCodr[tabCodr_ind++] = codops;
+		tabCodr[tabCodr_ind++] = atoi(argument);
+		break;
+	      }
+	    case OP_COPY:
+	      {
+		tabCodr[tabCodr_ind++] = codops;
+		tabCodr[tabCodr_ind++] = atoi(argument);
+		break;
+	      }
+	    case OP_CALL:
+	      {
+		int indLabel = find_label(argument);
+		tabCodr[tabCodr_ind++] = codops;
+		
+		if ( indLabel != -1)
+		  {
+		    /* printf("DANS JF!! indice: %d\n", table_etiquette[indLabel].addr); */
+		    tabCodr[tabCodr_ind++] = table_etiquette[indLabel].addr;
+		  }
+		  
+		else
+		  {
+		    table_ref[tab_ind_ref].addr = tabCodr_ind;
+		    table_ref[tab_ind_ref++].nom = strdup(argument);
+		    tabCodr[tabCodr_ind++] = -1;
+		  }
+		break;
+	      }
 	    default:
 	      {
 		tabCodr[tabCodr_ind++] = codops;
