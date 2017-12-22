@@ -63,7 +63,7 @@ void run()
 {
 	float fv;
 	int /*vm1,*/v;
-    	int i,/*depile,*/n,orig,dest;
+    	int i/*,depile*/,n,orig,dest;
 	char strReal[256];
 	int strRealLength,pos;
 
@@ -102,8 +102,9 @@ void run()
 				pile[sp-1]=(float)((int)pile[sp-1] | (int)pile[sp]);
 				sp-- ; pc++ ; break;
 			case OP_NOT:
-				pile[sp]=(float)(1-(int)pile[sp]);
-				pc++ ; break;
+			        //pile[sp]=(float)(1-(int)pile[sp]);
+				pile[sp-1]=(pile[sp-1] != pile[sp]) ? 1.0 : 0.0;
+			        sp--; pc++ ; break;
 			case OP_EQ:
 				pile[sp-1]=(pile[sp-1]==pile[sp]) ? 1.0 : 0.0;
 				sp-- ; pc++ ; break;
@@ -248,7 +249,7 @@ void run()
 				sp--;
 				pc++; break;
 			default:
-				printf("Instruction non reconnue\n");
+			  printf("Instruction non reconnue: %d\n", codeSegment[pc]);
 				exit(1);
 		}
 		//printExecStack();

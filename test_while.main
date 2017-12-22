@@ -27,12 +27,16 @@ a = 1;
 b = 2;
 begin
 write paola(paola(1,1,1),2,3);
-write "c";
+//on ne peut pas afficher des string
 end;
-while a < 3 do
+while a != 3 do
      begin
      a = a + 1;
      write a;
      end;
 write b;
+
+/*
+les appels de fonctions de cette forme f() ne marchent pas 
+*/
 end .

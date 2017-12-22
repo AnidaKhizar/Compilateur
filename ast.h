@@ -5,7 +5,7 @@
 
 // Cet enum contient tous les types possibles pour un noeud "operator"
 typedef enum { OPER_ADD, OPER_SUB, OPER_MULT, OPER_DIV, OPER_WRITE, 
-	       OPER_SKIP, OPER_IF, OPER_WHILE, OPER_SEQUENCE, OPER_APPEL_FONCTION,
+	       OPER_SKIP, OPER_IF, OPER_WHILE, OPER_FOR, OPER_DO_WHILE, OPER_SEQUENCE, OPER_APPEL_FONCTION,
 	       OPER_INF, OPER_SUP, OPER_GE, OPER_LE, OPER_NE, OPER_EQ,
                OPER_NOT, OPER_AND, OPER_OR, OPER_NEG, OPER_ASSIGN,
 	       OPER_DEF_FONCTION, OPER_RETURN,
@@ -52,7 +52,7 @@ typedef struct nodeTypeTag {
 extern nodeType *createNumericNode(float v);
 extern nodeType *createIdentifierNode(char *id, int funcNum, int index);
 extern nodeType *createOperatorNode(int oper, int nOperands, ...);
-extern void generateAsmRec(nodeType *n, FILE *fout);
+extern void generateAsmRec(nodeType *n, FILE *fout, char* nom);
 void generateAsmExpression(nodeType *n, FILE *fout);
 extern void generateAsm(nodeType *n, char *filename);
 extern void generateDigraphEdges(nodeType *n,FILE *fout);

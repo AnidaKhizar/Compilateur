@@ -5,6 +5,7 @@
 
 %}
 %option yylineno
+
 %%
 
 "and"           {return T_AND;}
@@ -13,12 +14,16 @@
 "begin"            {return T_BEGIN;}
 "end"            {return T_END;}
 "var"           {return T_VAR;}
+"program"       {return T_PROGRAM;}
+"return"        {return T_RETURN;}
 "write"         {return T_WRITE;}
 "if"         {return T_IF;}
 "else"         {return T_ELSE;}
 "while"         {return T_WHILE;}
 "do"         {return T_DO;}
 "then"         {return T_THEN;}
+"function"      {return T_FUNCTION;}
+"for"      {return T_FOR;}
 
 [a-zA-Z][a-zA-Z0-9_]*   {
                 		yylval.s = strdup(yytext);
@@ -38,7 +43,8 @@
 "<="            {return T_LE;}
 "=="            {return T_EQ;}
 "!="            {return T_NE;}
-
+"//"((.)*)\n	{printf("LineComment\n");}
+"/*"(([^*]|(("*"+)[^*/]))*)("*"+)"/"\n {printf("MultilineComment\n");}
 [ \t\n]+
 .               { return *yytext; }
 

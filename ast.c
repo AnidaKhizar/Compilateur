@@ -80,147 +80,146 @@ void generateAsmRec(nodeType *n, FILE *fout, char* nom)
     char tmpstr[256];
     sprintf(tmpstr,"%s_%d",nom,level++);
     nom=tmpstr;
-	if (n==NULL)
-		return;
+    if (n==NULL)
+      return;
 
-	//printf("ENFANT DU NOEUD: %s\n", nom);
-	switch(n->type)
-	  {
-	  case typeNumeric:
-	    {
-	      fprintf(fout, "\tpushr %f\n", n -> t_numeric.valeur);
-	      break;
-	    }
-	  case typeOperator:
-	    {
-            switch (n -> t_oper.oper)
+    //printf("ENFANT DU NOEUD: %s\n", nom);
+    switch(n->type)
+      {
+      case typeNumeric:
+	{
+	  fprintf(fout, "\tpushr %f\n", n -> t_numeric.valeur);
+	  break;
+	}
+      case typeOperator:
+	{
+	  switch (n -> t_oper.oper)
             {
-                    case OPER_ADD:
-                      {
-                        //printf("DANS OPER_ADD\n");
-                        generateAsmRec(n -> t_oper.op[0],fout, "OPER_ADD gauche");
-                        generateAsmRec(n -> t_oper.op[1],fout, "OPER_ADD droite");
-                        fprintf(fout, "\tadd\n");
+	    case OPER_ADD:
+	      {
+		//printf("DANS OPER_ADD\n");
+		generateAsmRec(n -> t_oper.op[0],fout, "OPER_ADD gauche");
+		generateAsmRec(n -> t_oper.op[1],fout, "OPER_ADD droite");
+		fprintf(fout, "\tadd\n");
 
-                        break;
-                      }
+		break;
+	      }
 
-                    case OPER_SUB:
-                      {
-                        generateAsmRec(n -> t_oper.op[0],fout, "OPER_SUB gauche");
-                        generateAsmRec(n -> t_oper.op[1],fout, "OPER_SUB droite");
+	    case OPER_SUB:
+	      {
+		generateAsmRec(n -> t_oper.op[0],fout, "OPER_SUB gauche");
+		generateAsmRec(n -> t_oper.op[1],fout, "OPER_SUB droite");
 
-                        fprintf(fout, "\tsub\n");
+		fprintf(fout, "\tsub\n");
 
-                        break;
-                      }
+		break;
+	      }
 
-                    case OPER_MULT:
-                      {
-                        generateAsmRec(n -> t_oper.op[0],fout, "OPER_MULT gauche");
-                        generateAsmRec(n -> t_oper.op[1],fout, "OPER_MULT droite");
+	    case OPER_MULT:
+	      {
+		generateAsmRec(n -> t_oper.op[0],fout, "OPER_MULT gauche");
+		generateAsmRec(n -> t_oper.op[1],fout, "OPER_MULT droite");
 
-                        fprintf(fout, "\tmult\n");
+		fprintf(fout, "\tmult\n");
 
-                        break;
-                      }
+		break;
+	      }
 
-                    case OPER_DIV:
-                      {
-                        int i;
-                        for(i=0; i < n -> t_oper.nOperands; i++)
-                          {
-                        generateAsmRec(n -> t_oper.op[i],fout, "");
-                          }
+	    case OPER_DIV:
+	      {
+		int i;
+		for(i=0; i < n -> t_oper.nOperands; i++)
+		  {
+		    generateAsmRec(n -> t_oper.op[i],fout, "");
+		  }
 
-                        fprintf(fout, "\tdiv\n");
+		fprintf(fout, "\tdiv\n");
 
-                        break;
-                      }
+		break;
+	      }
 
-                    case OPER_WRITE:
-                      {
-                        //printf("DANS WRITE\n");
-                        generateAsmRec(n -> t_oper.op[0],fout, "OPER_WRITE");
-                        fprintf(fout, "\toutput\n");
+	    case OPER_WRITE:
+	      {
+		//printf("DANS WRITE\n");
+		generateAsmRec(n -> t_oper.op[0],fout, "OPER_WRITE");
+		fprintf(fout, "\toutput\n");
 
-                        break;
-                      }
+		break;
+	      }
 
 
-                    case OPER_ASSIGN:
-                      {
-                        //printf("DANS OPER_ASSIGN\n");
-                        switch (table_ident_fonctions[n -> t_oper.op[0] -> t_identifier.funcNum][n -> t_oper.op[0] -> t_identifier.index].typv)
-                        {
-                            case TYPE_VARIABLE_GLOBALE:
-                              {
-                                fprintf(fout, "\tpush %d\n", n -> t_oper.op[0] -> t_identifier.index);
-                                generateAsmRec(n -> t_oper.op[1],fout, "OPER_ASSIGN droite");
-                                fprintf(fout, "\tstm\n");
-                                break;
-                              }
-                            case TYPE_VARIABLE_LOCALE:
-                              {
-                                fprintf(fout, "\tlibp %d\n", - table_nbre_formels[n -> t_oper.op[0] -> t_identifier.funcNum] + n -> t_oper.op[0] -> t_identifier.index);
-                                generateAsmRec(n -> t_oper.op[1],fout, "OPER_ASSIGN droite");
-                                fprintf(fout,"\tstm\n");
-                                break;
-                              }
-                            case TYPE_PARAMETRE:
-                              {
-                                fprintf(fout, "\tlibp %d\n", -1 - table_nbre_formels[n -> t_oper.op[0] -> t_identifier.funcNum] + n -> t_oper.op[0] -> t_identifier.index);
-                                generateAsmRec(n -> t_oper.op[1],fout, "OPER_ASSIGN droite");
-                                fprintf(fout,"\tstm\n");
-                                break;
-                              }
-                        }
+	    case OPER_ASSIGN:
+	      {
+		//printf("DANS OPER_ASSIGN\n");
+		switch (table_ident_fonctions[n -> t_oper.op[0] -> t_identifier.funcNum][n -> t_oper.op[0] -> t_identifier.index].typv)
+		  {
+		  case TYPE_VARIABLE_GLOBALE:
+		    {
+		      fprintf(fout, "\tpush %d\n", n -> t_oper.op[0] -> t_identifier.index);
+		      generateAsmRec(n -> t_oper.op[1],fout, "OPER_ASSIGN droite");
+		      fprintf(fout, "\tstm\n");
+		      break;
+		    }
+		  case TYPE_VARIABLE_LOCALE:
+		    {
+		      fprintf(fout, "\tlibp %d\n", - table_nbre_formels[n -> t_oper.op[0] -> t_identifier.funcNum] + n -> t_oper.op[0] -> t_identifier.index);
+		      generateAsmRec(n -> t_oper.op[1],fout, "OPER_ASSIGN droite");
+		      fprintf(fout,"\tstm\n");
+		      break;
+		    }
+		  case TYPE_PARAMETRE:
+		    {
+		      fprintf(fout, "\tlibp %d\n", -1 - table_nbre_formels[n -> t_oper.op[0] -> t_identifier.funcNum] + n -> t_oper.op[0] -> t_identifier.index);
+		      generateAsmRec(n -> t_oper.op[1],fout, "OPER_ASSIGN droite");
+		      fprintf(fout,"\tstm\n");
+		      break;
+		    }
+		  }
 
-                        break;
-                      }
-                    case OPER_SEQUENCE:
-                      {
-                        //printf("DANS OPER_SEQUENCE: %d\n", n -> t_oper.nOperands);
-                        generateAsmRec(n -> t_oper.op[0],fout, "OPER_SEQUENCE gauche");
-                        generateAsmRec(n -> t_oper.op[1],fout, "OPER_SEQUENCE droite");
+		break;
+	      }
+	    case OPER_SEQUENCE:
+	      {
+		//printf("DANS OPER_SEQUENCE: %d\n", n -> t_oper.nOperands);
+		generateAsmRec(n -> t_oper.op[0],fout, "OPER_SEQUENCE gauche");
+		generateAsmRec(n -> t_oper.op[1],fout, "OPER_SEQUENCE droite");
 
-                        break;
-                      }
+		break;
+	      }
 
-                    case OPER_RESERVE_SPACE:
-                      {
-                        //printf("DANS RESERVE_SPACE\n");
-                        break;
-                      }
-                    case OPER_MAIN:
-                      {
-                        //printf("DANS MAIN: %d\n", n-> t_oper.nOperands);
-                        fprintf(fout, "main :\n");
-                        generateAsmRec( n -> t_oper.op[0], fout, "MAIN");
-                        break;
-                      }
-                      case OPER_DEF_FONCTION:
-                      {
-                        //printf("DANS MAIN: %d\n", n-> t_oper.nOperands);
-			fprintf(fout, "%s :\n",table_ident_fonctions[0][num_func].ident);
-			generateAsmRec( n -> t_oper.op[1], fout, table_ident_fonctions[0][num_func++].ident);
-			if (table_ret[num_func-1] != 1)
-			  fprintf(fout, "\tret\n");
-                        break;
-                      }
-                    case OPER_APPEL_FONCTION:
-                      {
-			printf("variables locales %s d'index %d: %d numfunc:%d\n",n->t_oper.op[0]->t_identifier.ident, n->t_oper.op[0]->t_identifier.index, table_nbre_variables_locales[n->t_oper.op[0]->t_identifier.index], table_ident_fonctions[0][n->t_oper.op[0]->t_identifier.index].funcNum);
-			fprintf(fout, "\tinc 1\n");
-			generateAsmRec(n -> t_oper.op[1], fout, "");
-			fprintf(fout, "\tsavebp\n");
-			fprintf(fout, "\tinc %d\n",table_nbre_variables_locales[table_ident_fonctions[0][n->t_oper.op[0]->t_identifier.index].funcNum] );
-			fprintf(fout, "\tcall %s\n", n -> t_oper.op[0]->t_identifier.ident);
-			fprintf(fout, "\tdec %d\n",table_nbre_variables_locales[table_ident_fonctions[0][n->t_oper.op[0]->t_identifier.index].funcNum] );
-			fprintf(fout, "\trstrbp\n");
-			fprintf(fout, "\tdec %d\n", table_nbre_formels[table_ident_fonctions[0][n->t_oper.op[0]->t_identifier.index].funcNum]);
-                        break;
-                      }
+	    case OPER_RESERVE_SPACE:
+	      {
+		//printf("DANS RESERVE_SPACE\n");
+		break;
+	      }
+	    case OPER_MAIN:
+	      {
+		//printf("DANS MAIN: %d\n", n-> t_oper.nOperands);
+		fprintf(fout, "main :\n");
+		generateAsmRec( n -> t_oper.op[0], fout, "MAIN");
+		break;
+	      }
+	    case OPER_DEF_FONCTION:
+	      {
+		//printf("DANS MAIN: %d\n", n-> t_oper.nOperands);
+		fprintf(fout, "%s :\n",table_ident_fonctions[0][num_func].ident);
+		generateAsmRec( n -> t_oper.op[1], fout, table_ident_fonctions[0][num_func++].ident);
+		if (table_ret[num_func-1] != 1)
+		  fprintf(fout, "\tret\n");
+		break;
+	      }
+	    case OPER_APPEL_FONCTION:
+	      {
+		fprintf(fout, "\tinc 1\n");
+		generateAsmRec(n -> t_oper.op[1], fout, "");
+		fprintf(fout, "\tsavebp\n");
+		fprintf(fout, "\tinc %d\n",table_nbre_variables_locales[table_ident_fonctions[0][n->t_oper.op[0]->t_identifier.index].funcNum] );
+		fprintf(fout, "\tcall %s\n", n -> t_oper.op[0]->t_identifier.ident);
+		fprintf(fout, "\tdec %d\n",table_nbre_variables_locales[table_ident_fonctions[0][n->t_oper.op[0]->t_identifier.index].funcNum] );
+		fprintf(fout, "\trstrbp\n");
+		fprintf(fout, "\tdec %d\n", table_nbre_formels[table_ident_fonctions[0][n->t_oper.op[0]->t_identifier.index].funcNum]);
+		break;
+	      }
 
 	    case OPER_RETURN:
 	      {
@@ -230,91 +229,101 @@ void generateAsmRec(nodeType *n, FILE *fout, char* nom)
 		table_ret[num_func-1] = 1;
 		break;
 	      }
-                    case OPER_INF:
-                      {
-                        //printf("DANS OPER_INF: %d\n", n -> t_oper.nOperands);
-//                        if (n -> t_oper.nOperands < 2)
-//                        {
-//                            printf("\tParent INF %s\n",nom);
-//                            FILE *fout2;
-//
-//                            fout2=fopen("res2.dot","w");
-//                            countDigraph=0;
-//                            fprintf(fout2,"digraph {\n");
-//                            printf("generateDigraphNameNode\n");
-//                            generateDigraphNameNode(n,fout2);
-//                            printf("generateDigraphEdges\n");
-//                            generateDigraphEdges(n,fout2);
-//                            fprintf(fout2,"}\n");
-//                            fclose(fout2);
-//                            system("dot -Tpng res2.dot -o res2.png");
-//                        }
-                        //exit(1);
-                        generateAsmRec(n -> t_oper.op[0],fout, "OPER_INF gauche");
-                        generateAsmRec(n -> t_oper.op[1],fout, "OPER_INF droite");
-                        fprintf(fout, "\tls\n");
-                        break;
-                      }
-                    case OPER_SUP:
-                      {
-                        //printf("DANS OPER_SUP\n");
-                        generateAsmRec(n -> t_oper.op[0],fout, "OPER_SUP gauche");
-                        generateAsmRec(n -> t_oper.op[1],fout, "OPER_SUP droite");
-                        fprintf(fout, "\tgt\n");
-                        break;
-                      }
-                    case OPER_EQ:
-                      {
-                        int i;
-                        for(i=0; i < n -> t_oper.nOperands; i++)
-                          {
-                            generateAsmRec(n -> t_oper.op[i],fout, "OPER_EQ");
-                          }
-                        fprintf(fout, "\teq\n");
-                        break;
-                      }
-                    case OPER_NE:
-                      {
-                        int i;
-                        for(i=0; i < n -> t_oper.nOperands; i++)
-                          {
-                        generateAsmRec(n -> t_oper.op[i],fout,"");
-                          }
-                        fprintf(fout, "\tnot\n");
-                        break;
-                      }
+	    case OPER_INF:
+	      {
+		generateAsmRec(n -> t_oper.op[0],fout, "OPER_INF gauche");
+		generateAsmRec(n -> t_oper.op[1],fout, "OPER_INF droite");
+		fprintf(fout, "\tls\n");
+		break;
+	      }
+	    case OPER_SUP:
+	      {
+		//printf("DANS OPER_SUP\n");
+		generateAsmRec(n -> t_oper.op[0],fout, "OPER_SUP gauche");
+		generateAsmRec(n -> t_oper.op[1],fout, "OPER_SUP droite");
+		fprintf(fout, "\tgt\n");
+		break;
+	      }
+	    case OPER_EQ:
+	      {
+		int i;
+		for(i=0; i < n -> t_oper.nOperands; i++)
+		  {
+		    generateAsmRec(n -> t_oper.op[i],fout, "OPER_EQ");
+		  }
+		fprintf(fout, "\teq\n");
+		break;
+	      }
+	    case OPER_NE:
+	      {
+		generateAsmRec(n -> t_oper.op[0],fout,"");
+		generateAsmRec(n -> t_oper.op[1],fout,"");
+		fprintf(fout, "\tnot\n");
+		break;
+	      }
 
-                    case OPER_IF:
-                      {
-                        label1 = currentLabel;
-                        generateAsmRec(n -> t_oper.op[0],fout, "OPER_IF gauche");
-                        fprintf(fout, "\tjf L%.3d\n",currentLabel++);
-                        generateAsmRec(n -> t_oper.op[1],fout, "OPER_IF milieu");
-                        label2 = currentLabel;
-                        if (n -> t_oper.op[2] && n -> t_oper.op[1] -> t_oper.oper != OPER_RETURN)
-                          fprintf(fout, "\tjp L%.3d\n",currentLabel++);
-                        fprintf(fout, "L%.3d :\n",label1);
-                        generateAsmRec(n -> t_oper.op[2],fout, "OPER_IF droite");
-                        if (n -> t_oper.op[2] && n -> t_oper.op[1] -> t_oper.oper != OPER_RETURN)
-                          fprintf(fout, "L%.3d :\n",label2);
-                        break;
-                      }
+	    case OPER_IF:
+	      {
+		label1 = currentLabel;
+		generateAsmRec(n -> t_oper.op[0],fout, "OPER_IF gauche");
+		fprintf(fout, "\tjf L%.3d\n",currentLabel++);
+		generateAsmRec(n -> t_oper.op[1],fout, "OPER_IF milieu");
+		label2 = currentLabel;
+		if (n -> t_oper.op[2] && n -> t_oper.op[1] -> t_oper.oper != OPER_RETURN)
+		  fprintf(fout, "\tjp L%.3d\n",currentLabel++);
+		fprintf(fout, "L%.3d :\n",label1);
+		generateAsmRec(n -> t_oper.op[2],fout, "OPER_IF droite");
+		if (n -> t_oper.op[2] && n -> t_oper.op[1] -> t_oper.oper != OPER_RETURN)
+		  fprintf(fout, "L%.3d :\n",label2);
+		break;
+	      }
 
-                    case OPER_WHILE:
-                      {
-                        //printf("DANS BOUCLE WHILE\n");
-                        label1 = currentLabel;
-                        fprintf(fout, "L%.3d :\n",currentLabel++);
-                        generateAsmRec(n -> t_oper.op[0],fout, "OPER_WHILE gauche");
-                        label2 = currentLabel;
-                        fprintf(fout, "\tjf L%.3d\n",currentLabel++);
-                        generateAsmRec(n -> t_oper.op[1],fout, "OPER_WHILE droite");
-                        fprintf(fout, "\tjp L%.3d\n",label1);
-                        fprintf(fout, "L%.3d :\n", label2);
-                        break;
-                      }
+	    case OPER_WHILE:
+	      {
+		//printf("DANS BOUCLE WHILE\n");
+		label1 = currentLabel;
+		fprintf(fout, "L%.3d :\n",currentLabel++);
+		generateAsmRec(n -> t_oper.op[0],fout, "OPER_WHILE gauche");
+		label2 = currentLabel;
+		fprintf(fout, "\tjf L%.3d\n",currentLabel++);
+		generateAsmRec(n -> t_oper.op[1],fout, "OPER_WHILE droite");
+		fprintf(fout, "\tjp L%.3d\n",label1);
+		fprintf(fout, "L%.3d :\n", label2);
+		break;
+	      }
 
-                    default:
+	      case OPER_FOR:
+	      {
+		//printf("DANS BOUCLE WHILE\n");
+		generateAsmRec(n -> t_oper.op[0],fout, "OPER_FOR");
+		label1 = currentLabel;
+		fprintf(fout, "L%.3d :\n",currentLabel++);
+		generateAsmRec(n -> t_oper.op[1],fout, "");
+		label2 = currentLabel;
+		fprintf(fout, "\tjf L%.3d\n",currentLabel++);
+		generateAsmRec(n -> t_oper.op[3],fout, "");
+		generateAsmRec(n -> t_oper.op[2],fout, "");
+		fprintf(fout, "\tjp L%.3d\n",label1);
+		fprintf(fout, "L%.3d :\n", label2);
+		break;
+	      }
+		      
+	    case OPER_DO_WHILE:
+	      {
+		//printf("DANS BOUCLE WHILE\n");
+		generateAsmRec(n -> t_oper.op[1], fout, "OPER_DO_WHILE");
+		label1 = currentLabel;
+		fprintf(fout, "L%.3d :\n",currentLabel++);
+		generateAsmRec(n -> t_oper.op[0],fout, "OPER_WHILE gauche");
+		label2 = currentLabel;
+		fprintf(fout, "\tjf L%.3d\n",currentLabel++);
+		generateAsmRec(n -> t_oper.op[1],fout, "OPER_WHILE droite");
+		fprintf(fout, "\tjp L%.3d\n",label1);
+		fprintf(fout, "L%.3d :\n", label2);
+		break;
+	      }
+
+	    default:
                       {
                         printf("operation: %d\n", n -> t_oper.oper );
                         printf("OPERATION INCONNUE!\n");
@@ -505,6 +514,20 @@ void generateDigraphNameNode(nodeType *n,FILE *fout)
 						n->digraphNode=countDigraph++;
                                 		fprintf(fout,"\tA%3.3d [label=\"while\"]\n",n->digraphNode);
                                                 break;
+				        case OPER_DO_WHILE:
+                                                generateDigraphNameNode(n->t_oper.op[0],fout);
+                                                generateDigraphNameNode(n->t_oper.op[1],fout);
+						n->digraphNode=countDigraph++;
+                                		fprintf(fout,"\tA%3.3d [label=\"do_while\"]\n",n->digraphNode);
+                                                break;
+					case OPER_FOR:
+                                                generateDigraphNameNode(n->t_oper.op[0],fout);
+                                                generateDigraphNameNode(n->t_oper.op[1],fout);
+						generateDigraphNameNode(n->t_oper.op[2],fout);
+						generateDigraphNameNode(n->t_oper.op[3],fout);
+						n->digraphNode=countDigraph++;
+                                		fprintf(fout,"\tA%3.3d [label=\"for\"]\n",n->digraphNode);
+                                                break;
                                         case OPER_IF:
                                                 generateDigraphNameNode(n->t_oper.op[0],fout);
                                                 generateDigraphNameNode(n->t_oper.op[1],fout);
@@ -561,7 +584,9 @@ void generateDigraphEdges(nodeType *n,FILE *fout)
                                         case OPER_EQ:
                                         case OPER_NE:
                                         case OPER_WHILE:
-                                        case OPER_APPEL_FONCTION:
+					case OPER_DO_WHILE:
+                                        case OPER_FOR:
+				        case OPER_APPEL_FONCTION:
                                         case OPER_DEF_FONCTION:
                                         case OPER_ASSIGN:
                                         case OPER_SEQUENCE:
