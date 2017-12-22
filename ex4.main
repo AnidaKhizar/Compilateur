@@ -1,0 +1,32 @@
+program ex3;
+
+var i;
+
+function myfunc(n1,n2);
+begin
+       	return n1+n2;
+end;
+
+function func2();
+begin
+	write 4;
+end;
+
+function paola(m1,m2,m3);
+var l1,l2;
+begin
+	l1=1;
+	l2=l1+1;
+	return m1+m2+m3+l2;	
+end;
+
+begin
+	i=1;
+	write paola(1,1,1);
+	while i<5 do
+		begin
+			write myfunc(i,i+1);
+			write paola(1,2,3);
+			i=i+1;
+		end;
+end.

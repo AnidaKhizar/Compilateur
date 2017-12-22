@@ -175,8 +175,9 @@ void readAssembly(FILE *fin)
 	    {
 	      char nom[256];
 	      char tmp; //pour stocker :
-	      sscanf(line, "%s %c %s %s", nom, &tmp, instruction, argument);
+	      sscanf(line, "%s %c", nom, &tmp);
 	      addLabel(nom, tabCodr_ind);
+	      continue;
 	    }
 	  else
 	    {

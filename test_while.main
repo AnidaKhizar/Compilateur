@@ -1,11 +1,38 @@
-var a,b;
+program test ;
+
+var a,b,c;
+
+function func(n1, n2);
+begin
+	return n1+n2;
+end;
+
+function func2();
+begin
+	write 4;
+end;
+
+function paola(m1,m2,m3);
+var l1,l2;
+begin
+	write func(1,1000);	
+	l1=1;
+	l2=l1+1;
+	return m1+m2+m3+l2;	
+end;
+
+
 begin
 a = 1;
 b = 2;
+begin
+write paola(paola(1,1,1),2,3);
+write "c";
+end;
 while a < 3 do
      begin
      a = a + 1;
      write a;
      end;
 write b;
-end
+end .
